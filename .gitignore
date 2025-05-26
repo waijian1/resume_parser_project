@@ -43,6 +43,7 @@ MANIFEST
 .vscode/
 
 # MLflow
+notebooks/mlruns/
 mlruns/
 .mlflow_tracking_uri
 
@@ -61,3 +62,9 @@ credentials*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Docker run scripts
+DockerRun
+
+# Temporary files
+test_resume.pdf
