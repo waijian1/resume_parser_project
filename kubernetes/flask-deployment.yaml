@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-parser-deployment
+  labels:
+    app: resume-parser
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resume-parser
+  template:
+    metadata:
+      labels:
+        app: resume-parser
+    spec:
+      containers:
+      - name: resume-parser-api
+        image: waijianlim/resume-parser-api:v1 # <--- CHANGE THIS
+        ports:
+        - containerPort: 5000 # Port Gunicorn listens on
+        env:
+        - name: S3_BUCKET_NAME
+          value: "resume-parser-waijian-20250525" # <--- CHANGE THIS
+        - name: TEXTRACT_ROLE_ARN
+          value: "arn:aws:iam::747549824523:role/TextractS3AccessRole" # <--- CHANGE THIS
+        - name: AWS_DEFAULT_REGION
+          value: "ap-southeast-1" # <--- CHANGE THIS
+        # --- NEW: Point MLflow to the K8s service ---
+        - name: MLFLOW_TRACKING_URI
+          value: "http://mlflow-service:5000" # Use K8s internal DNS!
+        # Mount AWS credentials
+        - name: AWS_SHARED_CREDENTIALS_FILE
+          value: "/root/.aws/credentials"
+        volumeMounts:
+        - name: aws-creds-volume
+          mountPath: "/root/.aws"
+          readOnly: true
+      volumes:
+      - name: aws-creds-volume
+        secret:
+          secretName: aws-credentials

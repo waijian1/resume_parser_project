@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-server-deployment
+  labels:
+    app: mlflow-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow-server
+  template:
+    metadata:
+      labels:
+        app: mlflow-server
+    spec:
+      containers:
+      - name: mlflow-server
+        image: waijianlim/mlflow-server-custom:v3.0.0rc2 # Using a standard image
+        args: [
+          "mlflow",
+          "server",
+          "--host", "0.0.0.0",
+          "--port", "5000",
+          "--backend-store-uri", "file:///mlruns_backend", # Using local file store (Non-persistent for this demo!)
+          "--default-artifact-root", "s3://resume-mlflow-waijian-20250525/" # <--- CHANGE THIS
+        ]
+        ports:
+        - containerPort: 5000
+        env: # Needs AWS creds to write artifacts to S3
+        - name: AWS_SHARED_CREDENTIALS_FILE
+          value: "/root/.aws/credentials"
+        - name: AWS_DEFAULT_REGION
+          value: "ap-southeast-1" # <--- CHANGE THIS
+        volumeMounts:
+        - name: aws-creds-volume
+          mountPath: "/root/.aws"
+          readOnly: true
+        - name: mlruns-backend-volume # Mount for the file backend
+          mountPath: "/mlruns_backend"
+      volumes:
+      - name: aws-creds-volume
+        secret:
+          secretName: aws-credentials
+      - name: mlruns-backend-volume # Use emptyDir for non-persistent local storage
+        emptyDir: {}

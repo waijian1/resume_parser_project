@@ -68,3 +68,7 @@ DockerRun
 
 # Temporary files
 test_resume.pdf
+=4.12.2
+aws/
+awscliv2.zip
+kubectl
